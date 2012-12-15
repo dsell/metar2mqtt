@@ -27,9 +27,9 @@ from config import Config
 import pymetar
 
 
-MQTT_TIMEOUT = 60	#seconds
 CLIENT_VERSION = "0.6"
 CLIENT_NAME = "metar2mqtt"
+MQTT_TIMEOUT = 60	#seconds
 
 
 #TODO might want to add a lock file
@@ -55,7 +55,6 @@ mqtt_connected = 0
 def on_connect(self, obj, rc):
 	global mqtt_connected
 	global running
-	global alerts
 
 	mqtt_connected = True
 	print "MQTT Connected"
@@ -129,10 +128,10 @@ def do_metar_loop():
 
 
 def do_disconnect():
-	   global connected
-	   mqttc.disconnect()
-	   connected = 0
-	   print "Disconnected"
+       global mqtt_connected
+       mqttc.disconnect()
+       mqtt_connected = False
+       print "Disconnected"
 
 
 def mqtt_disconnect():
@@ -145,7 +144,6 @@ def mqtt_disconnect():
 
 
 def mqtt_connect():
-
 	rc = 1
 	while ( rc ):
 		print "Attempting connection..."

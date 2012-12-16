@@ -13,6 +13,7 @@ __copyright__ = "Copyright (C) Dennis Sell"
 
 
 
+import os
 import sys
 import mosquitto
 import socket
@@ -38,7 +39,8 @@ MQTT_TIMEOUT = 60	#seconds
 
 
 #read in configuration file
-f = file('.metar2mqtt.conf')
+homedir = os.path.expanduser("~")
+f = file(homedir + '.metar2mqtt.conf')
 cfg = Config(f)
 MQTT_HOST = cfg.MQTT_HOST
 MQTT_PORT = cfg.MQTT_PORT

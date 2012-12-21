@@ -18,11 +18,8 @@ import sys
 import mosquitto
 import socket
 import time
-import subprocess
-from gi.repository import NetworkManager, NMClient
 import logging
 import signal
-import pynotify
 import threading
 from config import Config
 import pymetar
@@ -40,7 +37,7 @@ MQTT_TIMEOUT = 60	#seconds
 
 #read in configuration file
 homedir = os.path.expanduser("~")
-f = file(homedir + '.metar2mqtt.conf')
+f = file(homedir + '/.metar2mqtt.conf')
 cfg = Config(f)
 MQTT_HOST = cfg.MQTT_HOST
 MQTT_PORT = cfg.MQTT_PORT

@@ -23,6 +23,7 @@ import signal
 import threading
 from config import Config
 import pymetar
+import commands
 
 
 CLIENT_VERSION = "0.6"
@@ -57,8 +58,11 @@ def on_connect(self, obj, rc):
 
 	mqtt_connected = True
 	print "MQTT Connected"
-	mqttc.publish( CLIENT_TOPIC + "status" , "running", 1, 1 )
+	mqttc.publish( CLIENT_TOPIC + "status" , "online", 1, 1 )
 	mqttc.publish( CLIENT_TOPIC + "version", CLIENT_VERSION, 1, 1 )
+	ip = commands.getoutput("/sbin/ifconfig").split("\n")[1].split()[1][5:]
+	mqttc.publish( CLIENT_TOPIC + "ip", ip, 1, 1 )
+	mqttc.publish( CLIENT_TOPIC + "pid", os.getpid(), 1, 1 )
 	mqttc.subscribe( CLIENT_TOPIC + "ping", 2)
 
 
@@ -140,13 +144,14 @@ def mqtt_disconnect():
 	if ( mqtt_connected ):
 		mqtt_connected = False 
 		print "MQTT Disconnected"
+		mqttc.publish ( "/clients/" + CLIENT_NAME + "/status" , "offline", 1, 1 )
 
 
 def mqtt_connect():
 	rc = 1
 	while ( rc ):
 		print "Attempting connection..."
-		mqttc.will_set(CLIENT_TOPIC + "status", "disconnected_", 1, 1)
+		mqttc.will_set(CLIENT_TOPIC + "status", "disconnected", 1, 1)
 
 		#define the mqtt callbacks
 		mqttc.on_message = on_message

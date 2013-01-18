@@ -144,14 +144,14 @@ def mqtt_disconnect():
 	if ( mqtt_connected ):
 		mqtt_connected = False 
 		print "MQTT Disconnected"
-		mqttc.publish ( "/clients/" + CLIENT_NAME + "/status" , "offline", 1, 1 )
+		mqttc.publish ( CLIENT_TOPIC + "/status" , "offline", 1, 1 )
 
 
 def mqtt_connect():
 	rc = 1
 	while ( rc ):
 		print "Attempting connection..."
-		mqttc.will_set(CLIENT_TOPIC + "status", "disconnected", 1, 1)
+		mqttc.will_set( CLIENT_TOPIC + "/status", "disconnected", 1, 1)
 
 		#define the mqtt callbacks
 		mqttc.on_message = on_message

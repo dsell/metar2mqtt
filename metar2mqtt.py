@@ -13,7 +13,7 @@ __copyright__ = "Copyright (C) Dennis Sell"
 
 
 APPNAME = "metar2mqtt"
-VERSION = "0.7"
+VERSION = "0.10"
 
 
 import sys
@@ -40,7 +40,7 @@ class MyMQTTClientCore(MQTTClientCore):
         self.interval = self.cfg.INTERVAL
         self.basetopic = self.cfg.BASE_TOPIC
         self.clientversion = VERSION
-        self.t = threading.Timer(self.interval, self.do_thread_loop)
+        self.t = threading.Thread(target=self.do_thread_loop)
         self.t.start()
 
     def do_thread_loop(self):
@@ -90,6 +90,7 @@ class MyMQTTClientCore(MQTTClientCore):
                     self.mqttc.publish(self.basetopic + station + "/sky_conditions", pr.getSkyConditions(), qos=1, retain=True)
                 if ( self.interval ):
                     print "Waiting ", self.interval, " minutes for next update."
+                    time.sleep(self.interval*60)
 
 
 class MyDaemon(Daemon):

@@ -14,6 +14,7 @@ __copyright__ = "Copyright (C) Dennis Sell"
 
 APPNAME = "metar2mqtt"
 VERSION = "0.10"
+WATCHTOPIC = "/raw/" + APPNAME + "/command"
 
 
 import sys
@@ -36,15 +37,30 @@ class MyMQTTClientCore(MQTTClientCore):
     def __init__(self, appname, clienttype):
         MQTTClientCore.__init__(self, appname, clienttype)
         self.clientversion = VERSION
+        self.watchtopic = WATCHTOPIC
         self.metarids = self.cfg.METAR_IDS
         self.interval = self.cfg.INTERVAL
         self.basetopic = self.cfg.BASE_TOPIC
         self.clientversion = VERSION
-        self.t = threading.Thread(target=self.do_thread_loop)
-        self.t.start()
+
+    def on_connect(self, mself, obj, rc):
+        MQTTClientCore.on_connect(self, mself, obj, rc)
+        self.mqttc.subscribe(self.watchtopic, qos=2)
+        self.mqttc.subscribe("/raw/clock/minute")
+
+    def on_message(self, mself, obj, msg):
+        MQTTClientCore.on_message(self, mself, obj, msg)
+        if (msg.topic == self.watchtopic):
+            if (msg.payload == "trigger"):
+                self.t = threading.Thread(target=self.do_thread_loop)
+                self.t.start()
+        if (msg.topic == "/raw/clock/minute"):
+            if (msg.payload == "3"):
+                self.t = threading.Thread(target=self.do_thread_loop)
+                self.t.start()
 
     def do_thread_loop(self):
-        while(self.running):
+        if(self.running):
             if ( self.mqtt_connected ):    
                 for station in self.metarids:
                     try:
@@ -88,9 +104,6 @@ class MyMQTTClientCore(MQTTClientCore):
                     else:
                         self.mqttc.publish(self.basetopic + station + "/cloud_type", "Unknown", qos=1, retain=True)
                     self.mqttc.publish(self.basetopic + station + "/sky_conditions", pr.getSkyConditions(), qos=1, retain=True)
-                if ( self.interval ):
-                    print "Waiting ", self.interval, " minutes for next update."
-                    time.sleep(self.interval*60)
 
 
 class MyDaemon(Daemon):
